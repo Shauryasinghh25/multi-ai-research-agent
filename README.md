@@ -66,21 +66,24 @@ G --> H[Final Report + RAGAS Evaluation]
 
 ## 📸 Demo
 
-> Add your screenshots inside an `assets/` folder for clean rendering.
+### 🧠 Dashboard UI
+Shows the multi-agent pipeline, knowledge base, and control panel.
 
-```bash
-assets/
-├── ui.png
-├── pipeline.png
-├── ragas.png
-```
+![Dashboard](assets/ui-dashboard.png)
 
-```md
-![UI](assets/ui.png)
-![Pipeline](assets/pipeline.png)
-![RAGAS Evaluation](assets/ragas.png)
-```
+---
 
+### ⚖️ RAG vs Plain LLM
+Comparison between grounded generation vs hallucination-prone output.
+
+![Comparison](assets/rag-vs-llm.png)
+
+---
+
+### 📊 RAGAS Evaluation
+Quantitative evaluation of faithfulness and relevancy.
+
+![RAGAS](assets/ragas-evaluation.png)
 ---
 
 ## 🛠️ Tech Stack
