@@ -324,7 +324,7 @@ def add_paper_to_kb(
         return {"success": False, "pages": 0, "chunks": 0, "error": str(e)}
 
 
-SIMILARITY_THRESHOLD = 0.75 # Minimum similarity to be considered relevant (very strict)
+SIMILARITY_THRESHOLD = 0.5 # Minimum similarity to be considered relevant 
 
 
 def retrieve_relevant_context(
@@ -349,16 +349,43 @@ def retrieve_relevant_context(
     if vectorstore is None:
         return "", [], []
 
-    # Fetch more candidates than needed since we'll filter by session
-    fetch_k = k * 3 if exclude_session_id else k
-    results_with_scores = vectorstore.similarity_search_with_score(query, k=fetch_k)
+    # Get actual FAISS distances
+    # Fetch plenty of candidates to allow for session and diversity filtering
+    fetch_k = 25
+    results_with_scores = vectorstore.similarity_search_with_score(
+        query,
+        k=fetch_k
+    )
+
     if not results_with_scores:
         return "", [], []
+
+    # Diversity filter: allow up to 2 chunks per topic
+    filtered_results = []
+    topic_counts = {}
+
+    for doc, distance in results_with_scores:
+        # 1. Session Isolation: skip chunks from the current session
+        chunk_session = doc.metadata.get("session_id", "")
+        if exclude_session_id and chunk_session == exclude_session_id:
+            continue
+
+        # 2. Diversity check: allow up to 2 chunks per topic
+        topic = doc.metadata.get("topic", "Unknown")
+        topic_counts.setdefault(topic, 0)
+
+        if topic_counts[topic] < 2:
+            filtered_results.append((doc, distance))
+            topic_counts[topic] += 1
+
+        if len(filtered_results) >= k:
+            break
+
+    results_with_scores = filtered_results
 
     context_parts = []
     accepted = []
     rejected = []
-    session_excluded_count = 0
 
     # Extract query keywords for matching explanation
     query_lower = query.lower()
@@ -369,20 +396,17 @@ def retrieve_relevant_context(
         indexed_at = doc.metadata.get("indexed_at", "")
         source_urls = doc.metadata.get("source_urls", "")
         source_type = doc.metadata.get("source_type", "unknown")
-        chunk_session = doc.metadata.get("session_id", "")
         preview = doc.page_content[:150].replace("\n", " ").strip()
-
-        # ── SESSION ISOLATION: skip chunks from the current session ──
-        if exclude_session_id and chunk_session == exclude_session_id:
-            session_excluded_count += 1
-            continue
 
         # ── SAFETY NET: never retrieve generated content ──
         if source_type == "generated":
             continue
 
         # FAISS returns L2 distance — convert to similarity (lower distance = better)
-        similarity = round(1.0 / (1.0 + distance), 2)
+        similarity = round(
+            max(0.0, min(1.0, 1.0 - (distance / 2.0))),
+            2
+        )
 
         # Build human-readable reasons
         reasons = []
