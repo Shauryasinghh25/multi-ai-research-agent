@@ -24,16 +24,16 @@ flowchart TD
 
 A[User Query]
 
-A --> B[01 — Search Agent<br/>(Tavily Web Search)]
-B --> C[02 — Reader Agent<br/>(Scrape & Extract Content)]
+A --> B[01 - Search Agent (Tavily Web Search)]
+B --> C[02 - Reader Agent (Scrape & Extract Content)]
 
-C --> D[03 — RAG Engine<br/>(Chunk + Embed + Retrieve)]
+C --> D[03 - RAG Engine (Chunk + Embed + Retrieve)]
 
-D -->|Persist| E[(FAISS Vector DB<br/>Knowledge Base)]
+D -->|Persist| E[(FAISS Vector DB - Knowledge Base)]
 E -->|Retrieve| D
 
-D --> F[04 — Writer Agent<br/>(Generate Research Report)]
-F --> G[05 — Critic Agent<br/>(Review & Improve Output)]
+D --> F[04 - Writer Agent (Generate Research Report)]
+F --> G[05 - Critic Agent (Review & Improve Output)]
 
 G --> H[Final Report + RAGAS Evaluation]
 ```
@@ -45,7 +45,7 @@ G --> H[Final Report + RAGAS Evaluation]
 * 🤖 Multi-agent orchestration (Search → Read → Write → Critique)
 * 📚 RAG with FAISS for semantic retrieval
 * 🌍 Web + PDF document ingestion
-* 📊 RAGAS evaluation (Faithfulness + Answer Relevancy)
+* 📊 RAGAS evaluation (Faithfulness & Answer Relevancy)
 * ⚡ Interactive Streamlit UI
 * 🔁 RAG vs Plain LLM comparison mode
 * 🧠 Context selection with similarity scoring
@@ -60,20 +60,25 @@ G --> H[Final Report + RAGAS Evaluation]
 | Web Query (Oil Prices) | 0.87         | 0.91      |
 | Broad Topic (Economy)  | 0.30–0.70    | ~0.80     |
 
-👉 Demonstrates how retrieval quality directly impacts grounding and hallucination reduction.
+👉 Shows how retrieval quality impacts factual grounding.
 
 ---
 
 ## 📸 Demo
 
-> *(Add your screenshots here for maximum impact)*
-![UI](image.png)
-![Working](<Screenshot 2026-05-05 035324.png>)
-![RAGAS Evaluation](image-1.png)
+> Add your screenshots inside an `assets/` folder for clean rendering.
 
+```bash
+assets/
+├── ui.png
+├── pipeline.png
+├── ragas.png
+```
 
 ```md
-
+![UI](assets/ui.png)
+![Pipeline](assets/pipeline.png)
+![RAGAS Evaluation](assets/ragas.png)
 ```
 
 ---
@@ -81,8 +86,8 @@ G --> H[Final Report + RAGAS Evaluation]
 ## 🛠️ Tech Stack
 
 * **Language**: Python
-* **Frameworks**: LangChain
-* **Vector DB**: FAISS
+* **Framework**: LangChain
+* **Vector Database**: FAISS
 * **Search API**: Tavily
 * **Scraping**: BeautifulSoup
 * **UI**: Streamlit
@@ -93,7 +98,7 @@ G --> H[Final Report + RAGAS Evaluation]
 ## ▶️ Run Locally
 
 ```bash
-git clone https://github.com/your-username/multi-ai-research-agent.git
+git clone https://github.com/Shauryasinghh25/multi-ai-research-agent.git
 cd multi-ai-research-agent
 
 pip install -r requirements.txt
@@ -115,26 +120,24 @@ MISTRAL_API_KEY=your_key_here
 
 ## 📦 Notes
 
-* FAISS index files are not included (generated at runtime)
+* FAISS index files are excluded (generated at runtime)
 * Designed for experimentation with RAG pipelines and evaluation
 
 ---
 
 ## 🚀 Future Improvements
 
-* FastAPI + Next.js full-stack deployment
-* Smarter chunk deduplication
+* FastAPI + Next.js deployment
+* Improved chunk deduplication
 * Hybrid retrieval (BM25 + embeddings)
-* Multi-modal support (images, tables)
+* Multi-modal support
 * Agent memory optimization
 
 ---
 
 ## 💡 Key Insight
 
-This project demonstrates that:
-
-> **Combining multi-agent systems with RAG + evaluation loops significantly improves factual accuracy and reduces hallucinations in LLM outputs.**
+> Combining multi-agent systems with RAG + evaluation loops significantly improves factual accuracy and reduces hallucinations in LLM outputs.
 
 ---
 
