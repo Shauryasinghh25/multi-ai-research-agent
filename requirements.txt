@@ -30,7 +30,7 @@ rich
 
 PyPDF2
 
-streamlit==1.57.0
+streamlit==1.37.1
 
 datasets
 ragas==0.2.7

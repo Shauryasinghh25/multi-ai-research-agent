@@ -106,38 +106,54 @@ def evaluate_report_with_ragas(
         row["ground_truth"] = ground_truth
 
     try:
-        dataset = Dataset.from_list([row])
-        llm = ChatMistralAI(model="mistral-medium-3-5", temperature=0)
-        embeddings = MistralAIEmbeddings(model="mistral-embed")
-        result = evaluate(
-            dataset,
-            metrics=metrics,
-            llm=llm,
-            embeddings=embeddings,
-            raise_exceptions=False,
-        )
+       import nest_asyncio
+       import asyncio
 
-        scores = {}
-        try:
+       nest_asyncio.apply()
+
+       dataset = Dataset.from_list([row])
+
+       llm = ChatMistralAI(
+        model="mistral-medium-3-5",
+        temperature=0
+    )
+
+       embeddings = MistralAIEmbeddings(
+        model="mistral-embed"
+    )
+
+       loop = asyncio.new_event_loop()
+       asyncio.set_event_loop(loop)
+
+       result = evaluate(
+         dataset,
+         metrics=metrics,
+         llm=llm,
+         embeddings=embeddings,
+         raise_exceptions=False,
+    )
+
+       scores = {}
+       try:
             scores = result.to_pandas().iloc[0].to_dict()
-        except Exception:
+       except Exception:
             try:
                 scores = dict(result)
             except Exception:
                 scores = {}
 
-        numeric_scores = {
+       numeric_scores = {
             key: float(value)
             for key, value in scores.items()
             if isinstance(value, (int, float)) and value == value
         }
-        overall = (
+       overall = (
             round(sum(numeric_scores.values()) / len(numeric_scores), 3)
             if numeric_scores
             else None
         )
 
-        return {
+       return {
             "ok": bool(numeric_scores),
             "error": None if numeric_scores else "RAGAS finished but returned no numeric scores.",
             "scores": numeric_scores,
