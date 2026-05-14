@@ -363,11 +363,18 @@ def retrieve_relevant_context(
     # Diversity filter: allow up to 2 chunks per topic
     filtered_results = []
     topic_counts = {}
+    session_excluded_count = 0
 
     for doc, distance in results_with_scores:
-        # 1. Session Isolation: skip chunks from the current session
+        # 1. Session Isolation: skip chunks from the current session (except papers)
         chunk_session = doc.metadata.get("session_id", "")
-        if exclude_session_id and chunk_session == exclude_session_id:
+        source_type = doc.metadata.get("source_type", "")
+        if (
+            exclude_session_id 
+            and chunk_session == exclude_session_id 
+            and source_type != "paper"
+        ):
+            session_excluded_count += 1
             continue
 
         # 2. Diversity check: allow up to 2 chunks per topic

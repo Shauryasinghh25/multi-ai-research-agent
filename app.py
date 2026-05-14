@@ -1053,7 +1053,7 @@ with st.sidebar:
                     pdf_result = add_paper_to_kb(
                         file_name=uploaded_pdf.name,
                         file_bytes=uploaded_pdf.read(),
-                        session_id=st.session_state.get("session_id", "upload"),
+                        session_id="paper_upload",
                     )
                 if pdf_result["success"]:
                     st.success(f"Ingested {uploaded_pdf.name} - {pdf_result['pages']} pages, {pdf_result['chunks']} chunks")
