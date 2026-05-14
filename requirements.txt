@@ -27,6 +27,7 @@ tenacity
 faiss-cpu
 
 rich
+nest-asyncio
 
 PyPDF2
 
