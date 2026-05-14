@@ -623,11 +623,11 @@ st.markdown("""
 
 
 # (Sidebar forced position removed - RAG sidebar now works normally on the right)
-
+import uuid
 
 # ── Initialize Session State ───────────────────────────────────────────────────
 if "session_id" not in st.session_state:
-    st.session_state.session_id = generate_session_id()
+    st.session_state.session_id = str(uuid.uuid4())
 if "research_results" not in st.session_state:
     st.session_state.research_results = []
 if "active_topic" not in st.session_state:
