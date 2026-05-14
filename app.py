@@ -35,7 +35,7 @@ except Exception as e:
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="ResearchMind – Multi-Agent AI System",
+    page_title="ResearchGuide – Multi-Agent AI System",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -205,25 +205,8 @@ html, body, [class*="css"] {
     box-shadow: none !important; transform: none !important;
 }
 
-/* ── Pipeline Sidebar ── */
-[data-testid="column"]:first-child {
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
-    height: 100vh !important;
-    background: var(--bg2) !important;
-    border-right: 1px solid var(--border) !important;
-    padding: 2rem 1.25rem !important;
-    overflow-y: auto !important;
-    z-index: 100 !important;
-    transition: transform 0.3s ease !important;
-    scrollbar-width: thin;
-    scrollbar-color: var(--surface3) transparent;
-}
-
-[data-testid="column"]:first-child.collapsed {
-    transform: translateX(-100%) !important;
-}
+/* ── Pipeline Cards (now in-flow, not fixed) ── */
+/* Pipeline styling removed from fixed positioning */
 
 .pipeline-container {
     display: flex;
@@ -291,19 +274,7 @@ html, body, [class*="css"] {
     color: var(--muted);
 }
 
-/* ── Toggle Button ── */
-.toggle-btn-container {
-    position: fixed;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 101;
-    transition: left 0.3s ease;
-}
-
-.toggle-btn-container.shifted {
-    left: 280px;
-}
+/* ── Toggle Button (removed, no longer needed) ── */
 
 /* ── Expander ── */
 details > summary {
@@ -536,8 +507,29 @@ span.material-symbols-rounded { display: none !important; }
 [data-testid="stDecoration"],
 [data-testid="stStatusWidget"],
 .stDeployButton { display: none !important; }
-[data-testid="stAppViewBlockContainer"] ~ div[class*="keyboard"],
-div[role="tooltip"][class*="keyboard"] { display: none !important; }
+[data-testid="stAppViewBlockContainer"] ~ *[class*="keyboard"],
+div[role="tooltip"][class*="keyboard"],
+/* Broad hide rules for stray icon ligatures and material icon names */
+[class*="keyboard"],
+[class^="keyboard"],
+i[class*="keyboard"],
+span[class*="keyboard"],
+svg[class*="keyboard"],
+.material-icons,
+i.material-icons,
+span.material-icons,
+[aria-label*="keyboard"] { display: none !important; visibility: hidden !important; }
+
+/* Specifically hide any tooltip or attribute-based labels inside the sidebar
+   to prevent the 'keyboard_double_arrow' ligature text from showing on hover. */
+[data-testid="stSidebar"] div[role="tooltip"],
+[data-testid="stSidebar"] [title*="keyboard_double"],
+[data-testid="stSidebar"] [aria-label*="keyboard_double"],
+[data-testid="stSidebar"] [data-testid*="keyboard_double"] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
 
 /* ── Fix file uploader ── */
 [data-testid="stFileUploaderDropzone"] button { display: none !important; }
@@ -557,6 +549,81 @@ div[role="tooltip"][class*="keyboard"] { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
+# Remove stray 'keyboard_double...' text if it appears (runs repeatedly for dynamic elements)
+st.markdown("""
+<script>
+function removeKeyboardDouble() {
+    try {
+        document.querySelectorAll('*').forEach(el => {
+            try {
+                if (el.childElementCount === 0 && el.innerText && el.innerText.toLowerCase().includes('keyboard_double')) {
+                    el.remove();
+                }
+            } catch(e){}
+        });
+    } catch(e){}
+}
+// Run once and a few times after to catch dynamically inserted elements
+removeKeyboardDouble();
+setTimeout(removeKeyboardDouble, 500);
+setTimeout(removeKeyboardDouble, 1500);
+setInterval(removeKeyboardDouble, 5000);
+</script>
+""", unsafe_allow_html=True)
+
+# Stronger remover: scan text nodes and hide ancestor elements and attributes containing the substring
+st.markdown("""
+<script>
+;(function(){
+    const substr = 'keyboard_double';
+    function hideMatches(){
+        try{
+            // scan text nodes
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            const toHide = new Set();
+            while(node = walker.nextNode()){
+                try{
+                    if(node.nodeValue && node.nodeValue.toLowerCase().includes(substr)){
+                        let el = node.parentElement;
+                        for(let i=0;i<6 && el;i++){
+                            toHide.add(el);
+                            el = el.parentElement;
+                        }
+                        node.nodeValue = '';
+                    }
+                }catch(e){}
+            }
+            toHide.forEach(el=>{
+                try{
+                    el.style.display = 'none' !important;
+                    el.style.visibility = 'hidden' !important;
+                    el.style.pointerEvents = 'none' !important;
+                }catch(e){}
+            });
+
+            // hide by attributes (title, aria-label, data-testid)
+            const attrSelector = ['title','aria-label','data-testid'];
+            attrSelector.forEach(attr=>{
+                document.querySelectorAll('['+attr+'*="'+substr+'"]').forEach(el=>{
+                    try{ el.style.display='none'; el.style.visibility='hidden'; el.style.pointerEvents='none'; }catch(e){}
+                });
+            });
+        }catch(e){}
+    }
+    hideMatches();
+    setTimeout(hideMatches,200);
+    setTimeout(hideMatches,800);
+    const id = setInterval(hideMatches,3000);
+    // stop after a while to avoid overhead
+    setTimeout(()=>clearInterval(id), 60000);
+})();
+</script>
+""", unsafe_allow_html=True)
+
+
+# (Sidebar forced position removed - RAG sidebar now works normally on the right)
+
 
 # ── Initialize Session State ───────────────────────────────────────────────────
 if "session_id" not in st.session_state:
@@ -567,8 +634,7 @@ if "active_topic" not in st.session_state:
     st.session_state.active_topic = None
 if "pipeline_visible" not in st.session_state:
     st.session_state.pipeline_visible = True
-if "rag_sidebar_open" not in st.session_state:
-    st.session_state.rag_sidebar_open = True
+
 
 
 # ── Error Page ────────────────────────────────────────────────────────────────
@@ -582,27 +648,75 @@ if not BACKEND_OK:
     st.stop()
 
 
-# ── Layout with Pipeline Sidebar ──────────────────────────────────────────────
-col_pipeline, col_main = st.columns([0.22, 0.78] if st.session_state.pipeline_visible else [0.001, 0.999])
+# ── Main Content ──────────────────────────────────────────────────────────────
 
-# ── Pipeline Sidebar (Left) ───────────────────────────────────────────────────
-with col_pipeline:
-    if st.session_state.pipeline_visible:
-        st.markdown('<div class="sidebar-header">Pipeline Stages</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kb-title">Agent Flow</div>', unsafe_allow_html=True)
-        
-        pipeline_stages = [
-            {"number": "01", "title": "Search Agent", "desc": "Gathers latest web information", "status": "ready"},
-            {"number": "02", "title": "Reader Agent", "desc": "Scrapes & extracts deep content", "status": "ready"},
-            {"number": "03", "title": "Writer Chain", "desc": "Crafts structured report", "status": "ready"},
-            {"number": "04", "title": "Critic Chain", "desc": "Reviews & provides feedback", "status": "ready"}
-        ]
+# Header
+st.markdown("""
+<div class="app-header">
+    <div class="app-eyebrow">Multi-Agent AI System</div>
+    <h1 class="app-title">
+        <span class="brand">Research</span><span class="brand-accent">Mind</span>
+    </h1>
+    <p class="app-subtitle">
+        Four specialized AI agents collaborate – searching, scraping, writing, and critiquing – to deliver a polished research report on any topic.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
-        st.markdown('<div class="pipeline-container">', unsafe_allow_html=True)
-        for stage in pipeline_stages:
+# Main Interface
+st.markdown('<div class="section-header">Research Topic</div>', unsafe_allow_html=True)
+
+topic_input = st.text_input(
+    "Enter your research topic",
+    placeholder="e.g., Quantum computing breakthroughs in 2025",
+    label_visibility="collapsed",
+    key="topic_input",
+)
+
+# Advanced Options
+with st.expander("⚙️ Advanced Options"):
+    col_opt1, col_opt2 = st.columns(2)
+
+    with col_opt1:
+        use_rag = st.checkbox(
+            "Enable RAG (Retrieval Augmented Generation)",
+            value=True,
+            help="Use knowledge base for context-aware responses"
+        )
+
+        run_ragas = st.checkbox(
+            "Run RAGAS Evaluation",
+            value=False,
+            help="Evaluate report quality with RAGAS metrics"
+        )
+
+    with col_opt2:
+        comparison_mode = st.checkbox(
+            "Compare RAG vs Plain LLM",
+            value=False,
+            help="Generate both RAG-augmented and plain reports"
+        )
+
+# Run Button
+run_clicked = st.button("▶ Run Research Pipeline", use_container_width=True, type="primary")
+
+# ── Agent Flow Pipeline Section ────────────────────────────────────────────────
+if st.session_state.pipeline_visible:
+    st.markdown('<div class="section-header" style="margin-top: 2.5rem;">Pipeline Stages</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kb-title" style="margin-bottom: 1.5rem;">Agent Flow</div>', unsafe_allow_html=True)
+    
+    pipeline_stages = [
+        {"number": "01", "title": "Search Agent", "desc": "Gathers latest web information", "status": "ready"},
+        {"number": "02", "title": "Reader Agent", "desc": "Scrapes & extracts deep content", "status": "ready"},
+        {"number": "03", "title": "Writer Chain", "desc": "Crafts structured report", "status": "ready"},
+        {"number": "04", "title": "Critic Chain", "desc": "Reviews & provides feedback", "status": "ready"}
+    ]
+
+    cols = st.columns(4)
+    for idx, stage in enumerate(pipeline_stages):
+        with cols[idx]:
             status_class = stage["status"]
             status_icon = "✔" if status_class == "ready" else "◌"
-
             st.markdown(f"""
             <div class="pipeline-card">
                 <div class="pipeline-number">{stage["number"]}</div>
@@ -611,67 +725,6 @@ with col_pipeline:
                 <div class="pipeline-status {status_class}">{status_icon} {status_class.upper()}</div>
             </div>
             """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-
-# ── Main Content ──────────────────────────────────────────────────────────────
-with col_main:
-    # Toggle button
-    col_toggle_btn, col_spacer = st.columns([0.08, 0.92])
-    with col_toggle_btn:
-        if st.button("◀" if st.session_state.pipeline_visible else "☰", key="toggle_pipeline", help="Toggle pipeline sidebar"):
-            st.session_state.pipeline_visible = not st.session_state.pipeline_visible
-            st.rerun()
-
-    # Header
-    st.markdown("""
-    <div class="app-header">
-        <div class="app-eyebrow">Multi-Agent AI System</div>
-        <h1 class="app-title">
-            <span class="brand">Research</span><span class="brand-accent">Mind</span>
-        </h1>
-        <p class="app-subtitle">
-            Four specialized AI agents collaborate – searching, scraping, writing, and critiquing – to deliver a polished research report on any topic.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Main Interface
-    st.markdown('<div class="section-header">Research Topic</div>', unsafe_allow_html=True)
-
-    topic_input = st.text_input(
-        "Enter your research topic",
-        placeholder="e.g., Quantum computing breakthroughs in 2025",
-        label_visibility="collapsed",
-        key="topic_input",
-    )
-
-    # Advanced Options
-    with st.expander("⚙️ Advanced Options"):
-        col_opt1, col_opt2 = st.columns(2)
-
-        with col_opt1:
-            use_rag = st.checkbox(
-                "Enable RAG (Retrieval Augmented Generation)",
-                value=True,
-                help="Use knowledge base for context-aware responses"
-            )
-
-            run_ragas = st.checkbox(
-                "Run RAGAS Evaluation",
-                value=False,
-                help="Evaluate report quality with RAGAS metrics"
-            )
-
-        with col_opt2:
-            comparison_mode = st.checkbox(
-                "Compare RAG vs Plain LLM",
-                value=False,
-                help="Generate both RAG-augmented and plain reports"
-            )
-
-    # Run Button
-    run_clicked = st.button("▶ Run Research Pipeline", use_container_width=True, type="primary")
 
 
 # ── Helper Functions ──────────────────────────────────────────────────────────
@@ -952,41 +1005,39 @@ if st.session_state.research_results:
 with st.sidebar:
     st.markdown('<div class="sidebar-header">Knowledge Base</div>', unsafe_allow_html=True)
     
-    # Collapsible RAG panel toggle
-    col_kb_hdr, col_kb_toggle = st.columns([0.75, 0.25])
-    with col_kb_hdr:
-        st.markdown('<div class="kb-title">RAG Memory</div>', unsafe_allow_html=True)
-    with col_kb_toggle:
-        toggle_label = "▲" if st.session_state.rag_sidebar_open else "▼"
-        if st.button(toggle_label, key="rag_toggle"):
-            st.session_state.rag_sidebar_open = not st.session_state.rag_sidebar_open
-            st.rerun()
-
-    if st.session_state.rag_sidebar_open:
+    st.markdown('<div class="kb-title">RAG Memory</div>', unsafe_allow_html=True)
+    
+    try:
         kb = get_kb_stats()
-        breakdown = kb.get("source_breakdown", {"web_search": 0, "web_scrape": 0, "paper": 0})
-        st.markdown(
-            f'<div class="kb-stat"><span class="kb-stat-label">Chunks indexed</span><span class="kb-stat-value">{kb["total_chunks"]}</span></div>'
-            f'<div class="kb-stat"><span class="kb-stat-label">Topics stored</span><span class="kb-stat-value">{len(kb["topics"])}</span></div>'
-            f'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:1rem;">'
-            f'<div style="padding:0.75rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);text-align:center;"><div style="font-family:JetBrains Mono;font-size:0.6rem;color:var(--muted);text-transform:uppercase;">Search</div><div style="font-family:JetBrains Mono;font-size:1.1rem;font-weight:700;color:var(--ink);">{breakdown.get("web_search", 0)}</div></div>'
-            f'<div style="padding:0.75rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);text-align:center;"><div style="font-family:JetBrains Mono;font-size:0.6rem;color:var(--muted);text-transform:uppercase;">Scrape</div><div style="font-family:JetBrains Mono;font-size:1.1rem;font-weight:700;color:var(--ink);">{breakdown.get("web_scrape", 0)}</div></div>'
-            f'<div style="padding:0.75rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);text-align:center;"><div style="font-family:JetBrains Mono;font-size:0.6rem;color:var(--violet);text-transform:uppercase;">Papers</div><div style="font-family:JetBrains Mono;font-size:1.1rem;font-weight:700;color:var(--violet);">{breakdown.get("paper", 0)}</div></div>'
-            f'</div>',
-            unsafe_allow_html=True,
+    except Exception as e:
+        st.error(f"KB Error: {str(e)[:100]}")
+        kb = {"exists": False, "total_chunks": 0, "topics": [], "source_breakdown": {}, "papers": []}
+    
+    breakdown = kb.get("source_breakdown", {"web_search": 0, "web_scrape": 0, "paper": 0})
+    st.markdown(
+        f'<div class="kb-stat"><span class="kb-stat-label">Chunks indexed</span><span class="kb-stat-value">{kb["total_chunks"]}</span></div>'
+        f'<div class="kb-stat"><span class="kb-stat-label">Topics stored</span><span class="kb-stat-value">{len(kb["topics"])}</span></div>'
+        f'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:1rem;">'
+        f'<div style="padding:0.75rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);text-align:center;"><div style="font-family:JetBrains Mono;font-size:0.6rem;color:var(--muted);text-transform:uppercase;">Search</div><div style="font-family:JetBrains Mono;font-size:1.1rem;font-weight:700;color:var(--ink);">{breakdown.get("web_search", 0)}</div></div>'
+        f'<div style="padding:0.75rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);text-align:center;"><div style="font-family:JetBrains Mono;font-size:0.6rem;color:var(--muted);text-transform:uppercase;">Scrape</div><div style="font-family:JetBrains Mono;font-size:1.1rem;font-weight:700;color:var(--ink);">{breakdown.get("web_scrape", 0)}</div></div>'
+        f'<div style="padding:0.75rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);text-align:center;"><div style="font-family:JetBrains Mono;font-size:0.6rem;color:var(--violet);text-transform:uppercase;">Papers</div><div style="font-family:JetBrains Mono;font-size:1.1rem;font-weight:700;color:var(--violet);">{breakdown.get("paper", 0)}</div></div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    topics = dedupe_topics(kb.get("topics", []))
+    if topics:
+        st.markdown('<div style="margin-top:1.25rem;"><span class="kb-stat-label">Recent Topics</span></div>', unsafe_allow_html=True)
+        tags_html = "".join(
+            f'<span class="kb-topic-tag">{t[:30]}{"..." if len(t) > 30 else ""}</span>'
+            for t in topics[-10:]
         )
+        st.markdown(f'<div style="margin-top:0.5rem;">{tags_html}</div>', unsafe_allow_html=True)
 
-        topics = dedupe_topics(kb.get("topics", []))
-        if topics:
-            st.markdown('<div style="margin-top:1.25rem;"><span class="kb-stat-label">Recent Topics</span></div>', unsafe_allow_html=True)
-            tags_html = "".join(
-                f'<span class="kb-topic-tag">{t[:30]}{"..." if len(t) > 30 else ""}</span>'
-                for t in topics[-10:]
-            )
-            st.markdown(f'<div style="margin-top:0.5rem;">{tags_html}</div>', unsafe_allow_html=True)
-
-        st.markdown('<hr class="rule"/>', unsafe_allow_html=True)
-        st.markdown('<div class="sidebar-header">Upload Paper</div>', unsafe_allow_html=True)
+    st.markdown('<hr class="rule"/>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-header">Upload Paper</div>', unsafe_allow_html=True)
+    
+    try:
         uploaded_pdf = st.file_uploader(
             "Upload a PDF research paper",
             type=["pdf"],
@@ -1008,11 +1059,14 @@ with st.sidebar:
                     st.rerun()
                 else:
                     st.error(pdf_result["error"])
+    except Exception as e:
+        st.warning(f"Paper upload temporarily unavailable: {str(e)[:80]}")
 
-        papers = kb.get("papers", [])
-        if papers:
-            st.markdown('<div style="margin-top:1rem;"><span class="kb-stat-label">Ingested Papers</span></div>', unsafe_allow_html=True)
-            for p in papers[-6:]:
+    papers = kb.get("papers", [])
+    if papers:
+        st.markdown('<div style="margin-top:1rem;"><span class="kb-stat-label">Ingested Papers</span></div>', unsafe_allow_html=True)
+        for p in papers[-6:]:
+            try:
                 nm = p["name"][:35] + ("..." if len(p["name"]) > 35 else "")
                 st.markdown(
                     f'<div style="padding:0.6rem 0.875rem;margin:0.4rem 0;background:var(--surface);border:1px solid var(--border2);border-left:2px solid var(--violet);border-radius:var(--radius-sm);">'
@@ -1021,17 +1075,16 @@ with st.sidebar:
                     f'</div>',
                     unsafe_allow_html=True,
                 )
+            except Exception as e:
+                continue
 
-        if kb["exists"]:
-            st.markdown('<hr class="rule"/>', unsafe_allow_html=True)
-            st.markdown('<div class="danger-btn">', unsafe_allow_html=True)
+    if kb["exists"]:
+        st.markdown('<hr class="rule"/>', unsafe_allow_html=True)
+        st.markdown('<div class="danger-btn">', unsafe_allow_html=True)
+        try:
             if st.button("Clear Knowledge Base", use_container_width=True):
                 clear_kb()
                 st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(
-            '<div style="font-size:0.82rem;color:var(--muted);margin-top:1rem;line-height:1.6;">'
-            'Click ▼ to expand RAG Memory panel.</div>',
-            unsafe_allow_html=True,
-        )
+        except Exception as e:
+            st.error(f"Clear KB error: {str(e)[:80]}")
+        st.markdown('</div>', unsafe_allow_html=True)
