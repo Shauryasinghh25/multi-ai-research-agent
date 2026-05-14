@@ -1,23 +1,20 @@
-# 🚀 Multi-Agent AI Research System
+#  Multi-Agent AI Research System
 
 > A production-style multi-agent pipeline that performs end-to-end research using web data, Retrieval-Augmented Generation (RAG), and quantitative evaluation with RAGAS.
 
----
 
-## ✨ Overview
+##  Overview
 
 This project simulates a **collaborative AI research system** where multiple specialized agents work together to:
 
-* 🔍 Search real-time information
-* 🌐 Scrape and extract structured content
-* 🧠 Retrieve context using FAISS-based RAG
-* ✍️ Generate high-quality research reports
-* 🧑‍⚖️ Critically evaluate outputs
-* 📊 Measure quality using RAGAS
+*  Search real-time information
+*  Scrape and extract structured content
+*  Retrieve context using FAISS-based RAG
+*  Generate high-quality research reports
+*  Critically evaluate outputs
+*  Measure quality using RAGAS
 
----
-
-## 🧠 Architecture
+##  Architecture
 
 ```mermaid
 flowchart TD
@@ -38,21 +35,20 @@ F --> G[Critic Agent]
 G --> H[Final Report + RAGAS Evaluation]
 ```
 
----
 
-## ⚙️ Features
+##  Features
 
-* 🤖 Multi-agent orchestration (Search → Read → Write → Critique)
-* 📚 RAG with FAISS for semantic retrieval
-* 🌍 Web + PDF document ingestion
-* 📊 RAGAS evaluation (Faithfulness & Answer Relevancy)
-* ⚡ Interactive Streamlit UI
-* 🔁 RAG vs Plain LLM comparison mode
-* 🧠 Context selection with similarity scoring
+*  Multi-agent orchestration (Search → Read → Write → Critique)
+*  RAG with FAISS for semantic retrieval
+*  Web + PDF document ingestion
+*  RAGAS evaluation (Faithfulness & Answer Relevancy)
+*  Interactive Streamlit UI
+*  RAG vs Plain LLM comparison mode
+*  Context selection with similarity scoring
 
----
 
-## 📊 Example Performance
+
+## Example Performance
 
 | Scenario               | Faithfulness | Relevancy |
 | ---------------------- | ------------ | --------- |
@@ -60,33 +56,33 @@ G --> H[Final Report + RAGAS Evaluation]
 | Web Query (Oil Prices) | 0.87         | 0.91      |
 | Broad Topic (Economy)  | 0.30–0.70    | ~0.80     |
 
-👉 Shows how retrieval quality impacts factual grounding.
+ Shows how retrieval quality impacts factual grounding.
 
----
 
-## 📸 Demo
 
-### 🧠 Dashboard UI
+##  Demo
+
+###  Dashboard UI
 Shows the multi-agent pipeline, knowledge base, and control panel.
 
 ![Dashboard](assets/ui-dashboard.png)
 
 ---
 
-### ⚖️ RAG vs Plain LLM
+###  RAG vs Plain LLM
 Comparison between grounded generation vs hallucination-prone output.
 
 ![Comparison](assets/rag-vs-llm.png)
 
 ---
 
-### 📊 RAGAS Evaluation
+###  RAGAS Evaluation
 Quantitative evaluation of faithfulness and relevancy.
 
 ![RAGAS](assets/ragas-evaluation.png)
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 * **Language**: Python
 * **Framework**: LangChain
@@ -96,9 +92,9 @@ Quantitative evaluation of faithfulness and relevancy.
 * **UI**: Streamlit
 * **Evaluation**: RAGAS
 
----
 
-## ▶️ Run Locally
+
+##  Run Locally
 
 ```bash
 git clone https://github.com/Shauryasinghh25/multi-ai-research-agent.git
@@ -108,9 +104,9 @@ pip install -r requirements.txt
 streamlit run app1.py
 ```
 
----
 
-## 🔐 Environment Variables
+
+##  Environment Variables
 
 Create a `.env` file:
 
@@ -119,16 +115,16 @@ TAVILY_API_KEY=your_key_here
 MISTRAL_API_KEY=your_key_here
 ```
 
----
 
-## 📦 Notes
+
+##  Notes
 
 * FAISS index files are excluded (generated at runtime)
 * Designed for experimentation with RAG pipelines and evaluation
 
----
 
-## 🚀 Future Improvements
+
+##  Future Improvements
 
 * FastAPI + Next.js deployment
 * Improved chunk deduplication
@@ -136,15 +132,15 @@ MISTRAL_API_KEY=your_key_here
 * Multi-modal support
 * Agent memory optimization
 
----
 
-## 💡 Key Insight
+
+##  Key Insight
 
 > Combining multi-agent systems with RAG + evaluation loops significantly improves factual accuracy and reduces hallucinations in LLM outputs.
 
----
 
-## 🧑‍💻 Author
+
+##  Author
 
 **Shaurya Singh**
 
