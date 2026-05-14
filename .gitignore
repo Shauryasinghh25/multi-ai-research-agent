@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.env
+.env.*
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vector DB / local storage
+chroma/
+*.sqlite3
+
+# FAISS vector store
+knowledge_base/index.faiss
+knowledge_base/index.pkl
+
+# Optional
+knowledge_base/
+knowledge_base/metadata.json
