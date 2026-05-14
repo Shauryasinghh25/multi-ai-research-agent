@@ -2,6 +2,23 @@
 
 > A production-style multi-agent pipeline that performs end-to-end research using web data, Retrieval-Augmented Generation (RAG), and quantitative evaluation with RAGAS.
 
+# Multi-Agent AI Research System
+
+
+>  **[Try the Live Demo →](https://multi-ai-research-agent.streamlit.app/)**
+
+Multi-agent AI system with RAG (FAISS) and RAGAS evaluation to generate and validate research reports from web and document sources.
+
+
+## Quick Start
+
+**Try it now:** Enter any research question at [multi-ai-research-agent.streamlit.app](https://multi-ai-research-agent.streamlit.app/)
+
+Example queries:
+- "What is BERT and how does it work?"
+- "Latest developments in quantum computing"
+- "Impact of AI on healthcare"
+
 
 ##  Overview
 
