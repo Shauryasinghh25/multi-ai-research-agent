@@ -5,7 +5,8 @@ Run with:  streamlit run app.py
 Requires agents.py exposing build_search_agent, build_reader_agent,
 writer_chain, critic_chain.
 """
-
+import nest_asyncio
+nest_asyncio.apply()
 import re
 import streamlit as st
 
@@ -35,7 +36,7 @@ except Exception as e:
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="ResearchGuide – Multi-Agent AI System",
+    page_title="ResearchMind– Multi-Agent AI System",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
