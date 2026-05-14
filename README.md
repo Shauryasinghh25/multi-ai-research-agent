@@ -24,16 +24,16 @@ flowchart TD
 
 A[User Query]
 
-A --> B[01 - Search Agent (Tavily Web Search)]
-B --> C[02 - Reader Agent (Scrape & Extract Content)]
+A --> B[Search Agent]
+B --> C[Reader Agent]
 
-C --> D[03 - RAG Engine (Chunk + Embed + Retrieve)]
+C --> D[RAG Engine]
 
-D -->|Persist| E[(FAISS Vector DB - Knowledge Base)]
+D -->|Persist| E[(FAISS Vector DB)]
 E -->|Retrieve| D
 
-D --> F[04 - Writer Agent (Generate Research Report)]
-F --> G[05 - Critic Agent (Review & Improve Output)]
+D --> F[Writer Agent]
+F --> G[Critic Agent]
 
 G --> H[Final Report + RAGAS Evaluation]
 ```
